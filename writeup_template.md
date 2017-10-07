@@ -15,13 +15,14 @@ The goals / steps of this project are the following:
 * Estimate a bounding box for vehicles detected.
 
 [//]: # (Image References)
-[image1]: ./examples/car_not_car.png
-[image2]: ./examples/HOG_example.jpg
-[image3]: ./examples/sliding_windows.jpg
-[image4]: ./examples/sliding_window.jpg
-[image5]: ./examples/bboxes_and_heat.png
-[image6]: ./examples/labels_map.png
-[image7]: ./examples/output_bboxes.png
+[image1]: ./examples/car.png
+[image2]: ./examples/hog.png
+[image3]: ./examples/slide_window.png
+[image4]: ./examples/slide_window1.png
+[image5]: ./examples/pipeline.png
+[image6]: ./examples/heatmap.png
+[image7]: ./examples/label.png
+[image8]: ./examples/final.png
 [video1]: ./project_video.mp4
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/513/view) Points
@@ -38,7 +39,9 @@ You're reading it!
 
 ####1. Explain how (and identify where in your code) you extracted HOG features from the training images.
 
-The code for this step is contained in the first code cell of the IPython notebook (or in lines # through # of the file called `some_file.py`).  
+The code for this step is contained in the 3rd - 5th code cell of the IPython notebook.
+First, I visualize the HOG, as this:
+![alt text][image2]
 
 I started by reading in all the `vehicle` and `non-vehicle` images.  Here is an example of one of each of the `vehicle` and `non-vehicle` classes:
 
@@ -70,7 +73,7 @@ I trained a linear SVM using a combination of color and hog features, with a X_s
 ####1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
 
 It's in my 7th cell. 
-Initially, I search it use the 1.5 scale and ystart = 400, and ystop = 656 as setted in lesson. and ge this result.
+Initially, I search it use the 1.5 scale and ystart = 400, and ystop = 656 as setted in lesson. and get this result.
 ![alt text][image3]
 
 Then I changed the parameter, and based on my observation, the searching window can be small if the vehicle is far from the camera, and be very large when close to camera. So I take different parameters and find those can be perform well.
@@ -95,8 +98,6 @@ One example of scale = 1.0 is:
 Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spatially binned color and histograms of color in the feature vector, which provided a nice result.  I first use combinations of different size of windows to get some rectangles, then I use heatmap to get the approximate area of vehicles and filter out some false positive windows. And finally, I use labels for my heatmap and draw rectangles on all those labels. Here are some example images:
 
 ![alt text][image5]
-![alt text][image6]
-![alt text][image7]
 ---
 
 Finally, I combined with Advanced lane lines project, and get a good result.
@@ -115,15 +116,15 @@ Here's an example result showing the heatmap from a series of frames of video, t
 
 ### Here one image and corresponding heatmap:
 
-![alt text][image5]
 ![alt text][image6]
+
 ### Here is the output of `scipy.ndimage.measurements.label()` on the integrated heatmap:
+
 ![alt text][image7]
 
 ### Here the resulting bounding boxes are drawn onto the image:
+
 ![alt text][image8]
-
-
 
 ---
 
