@@ -44,40 +44,67 @@ I started by reading in all the `vehicle` and `non-vehicle` images.  Here is an 
 
 ![alt text][image1]
 
-I then explored different color spaces and different `skimage.hog()` parameters (`orientations`, `pixels_per_cell`, and `cells_per_block`).  I grabbed random images from each of the two classes and displayed them to get a feel for what the `skimage.hog()` output looks like.
+I then explored different color spaces and different parameters (`orientations`, `pixels_per_cell`, and `cells_per_block`).  I grabbed random images from each of the two classes and displayed them to get a feel for what the output looks like. This is a part of my experiment with time.
 
-Here is an example using the `YCrCb` color space and HOG parameters of `orientations=8`, `pixels_per_cell=(8, 8)` and `cells_per_block=(2, 2)`:
+| color_space  | orient | pix_per_cell | cell_per_block | hog_channel | Accuracy |
+|:------------:|:------:|:------------:|:--------------:|:-----------:|:--------:|
+| HLS          | 12     | 12           | 3              | ALL         | 0.98     |
+| HLS          | 12     | 16           | 2              | ALL         | 0.99     |
+| HLS          | 12     | 16           | 3              | ALL         | 0.99     |
+| YCrCb        | 9      | 8            | 2              | ALL         | 1.00     |
+| YCrCb        | 9      | 8            | 3              | ALL         | 0.98     |
+| YCrCb        | 9      | 16           | 2              | ALL         | 1.00     |
 
-
-![alt text][image2]
 
 ####2. Explain how you settled on your final choice of HOG parameters.
 
-I tried various combinations of parameters and...
+I tried various combinations of parameters and calculated corresponding prediction accuracy, and choose one of the best results as the parameter.
 
 ####3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
 
-I trained a linear SVM using...
+It's in my fifth cell of Vehicle_Detection.ipynb. 
+I trained a linear SVM using a combination of color and hog features, with a X_scaler to transform my features to uniform scales, then I shuffled the data and split them into training and test parts. Finally, I use training data to fit the SVM classifier, and test data to test prediction accuracy.
 
 ###Sliding Window Search
 
 ####1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
 
-I decided to search random window positions at random scales all over the image and came up with this (ok just kidding I didn't actually ;):
-
+It's in my 7th cell. 
+Initially, I search it use the 1.5 scale and ystart = 400, and ystop = 656 as setted in lesson. and ge this result.
 ![alt text][image3]
+
+Then I changed the parameter, and based on my observation, the searching window can be small if the vehicle is far from the camera, and be very large when close to camera. So I take different parameters and find those can be perform well.
+
+| ystart  | ystop | scale |
+|:-------:|:-----:|:-----:|
+| 400     | 464   |1.0    |
+| 416     | 480   |1.0    |
+| 400     | 496   |1.5    |
+| 432     | 528   |1.5    |
+| 400     | 528   |2.0    |
+| 432     | 560   |2.0    |
+| 400     | 592   |3.0    |
+| 464     | 660   |3.0    |
+
+Explanation: ystop - ystart = scale * window_size, and less scale should near the y=400 line.
+One example of scale = 1.0 is:
+![alt text][image4]
 
 ####2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
 
-Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spatially binned color and histograms of color in the feature vector, which provided a nice result.  Here are some example images:
+Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spatially binned color and histograms of color in the feature vector, which provided a nice result.  I first use combinations of different size of windows to get some rectangles, then I use heatmap to get the approximate area of vehicles and filter out some false positive windows. And finally, I use labels for my heatmap and draw rectangles on all those labels. Here are some example images:
 
-![alt text][image4]
+![alt text][image5]
+![alt text][image6]
+![alt text][image7]
 ---
+
+Finally, I combined with Advanced lane lines project, and get a good result.
 
 ### Video Implementation
 
 ####1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (somewhat wobbly or unstable bounding boxes are ok as long as you are identifying the vehicles most of the time with minimal false positives.)
-Here's a [link to my video result](./project_video.mp4)
+Here's a [link to my video result](./project_video_out.mp4)
 
 
 ####2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
@@ -86,15 +113,15 @@ I recorded the positions of positive detections in each frame of the video.  Fro
 
 Here's an example result showing the heatmap from a series of frames of video, the result of `scipy.ndimage.measurements.label()` and the bounding boxes then overlaid on the last frame of video:
 
-### Here are six frames and their corresponding heatmaps:
+### Here one image and corresponding heatmap:
 
 ![alt text][image5]
-
-### Here is the output of `scipy.ndimage.measurements.label()` on the integrated heatmap from all six frames:
 ![alt text][image6]
-
-### Here the resulting bounding boxes are drawn onto the last frame in the series:
+### Here is the output of `scipy.ndimage.measurements.label()` on the integrated heatmap:
 ![alt text][image7]
+
+### Here the resulting bounding boxes are drawn onto the image:
+![alt text][image8]
 
 
 
@@ -104,5 +131,6 @@ Here's an example result showing the heatmap from a series of frames of video, t
 
 ####1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+In the video implementation, I find that the position of windows change frequently, so then I added a class to ercord last 15 frames, and calculate the box based on that. also my threshold for heatmap is always change based on how many frames I've recorded. And now, the windows become more stable, but still has some false positives.
+I think there is a way to remove some false positives but I've not figure it out entirely. My rudimentary idea is to calculate the overlap ratio of two windows. If there are two windows that the ratio is less than a threshold, they should be counted as two different object. And finally, one object should have a reasonable amount of windows to make it not false positive. 
 
